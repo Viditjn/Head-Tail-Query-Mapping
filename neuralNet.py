@@ -41,9 +41,9 @@ def wordTovec(headQuery,tailQuery,model):
 def NeuralNet(train_X,train_Y):
 	model = Sequential()
 	model.add(Dense(word2vecLen,activation='tanh',input_dim=word2vecLen))
-	model.add(Dense(10,activation='tanh'))
+	model.add(Dense(word2vecLen/2,activation='tanh'))
 	model.add(Dropout(0.23))
-	model.add(Dense(10,activation='tanh'))
+	model.add(Dense(word2vecLen/4,activation='tanh'))
 	model.add(Dropout(0.26))
 	model.add(Dense(1,activation='sigmoid'))
 	# model.add(Dropout(0.29))
@@ -94,7 +94,7 @@ if __name__== "__main__":
 	modelVec = gensim.models.Word2Vec.load(Word2vec_PATH)
 	#modelVec = KeyedVectors.load_word2vec_format(Word2vec_PATH, binary=True)
 	total_data = len(data)
-	train_data_word = data[:int(0.8*total_data)]
+	train_data_word = data
 	l1 = len(train_data_word)
 	test_data_word = data[int(0.8*total_data):]
 	l2 = len(test_data_word)
@@ -123,7 +123,7 @@ if __name__== "__main__":
 		i += 1
 
 	modelNet = NeuralNet(train_X,train_Y)
-	modelNet.save('my_model1.h5')
+	modelNet.save('my_model2.h5')
 	finalAns = findAnswers(test_X,modelNet,train_Y)
 	head_queries , head_X = createHeadVectors(modelVec)
 	head_queries = head_queries.reshape(head_queries.shape[0],-1)
