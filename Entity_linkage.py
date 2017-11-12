@@ -44,21 +44,24 @@ if __name__ == '__main__':
 	
 	dxtr=pydexter.DexterClient("http://dexterdemo.isti.cnr.it:8080/dexter-webapp/api/")
 	count=0
-
+	query_pairs=0
 	with open("newMedium.txt") as infile:
 		for line in infile:
 			headQuery,tailQuery,relevance=line.split("||")
 			headQuery=headQuery.strip()
 			tailQuery=tailQuery.strip()
+			relevance=int(relevance.strip())
 			# print headQuery
 			# print tailQuery
 			# print relevance
 			# break
+			pred=Entity_linkage(headQuery,tailQuery,dxtr)
+			print headQuery,tailQuery,pred
 
-			print Entity_linkage(headQuery,tailQuery,dxtr)
-			count+=1
+			if pred==relevance:
+				count+=1
 
-			if count==50:
-				break
+			query_pairs+==1	
 
+	print "accuracy is: ",count/query_pairs		
 	print "Done"		 
