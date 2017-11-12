@@ -1,15 +1,17 @@
 import numpy
 import sys
+import os
 from keras.layers import Input, Embedding, LSTM, Dense
 from keras.models import Model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+import pdb
 
 head_shape = 5
 tail_shape = 10
 top_words = 100000
 EMBEDDING_DIM = 100
-GLOVE_DIR = '../../glove'
+GLOVE_DIR = '../../glove6B'
 
 def createEmbeddingMatrix(file_path):
     embeddings_index = {}
@@ -25,9 +27,11 @@ def createEmbeddingMatrix(file_path):
     tail = []
     with open(file_path,'r') as f:
         for l in f:
+            t = l.split('||')
             text.append(l)
-            head.append(l.split('||')[0].strip())
-            tail.append(l.split('||')[1].strip())
+            head.append(t[0].strip())
+            tail.append(t[1].strip())
+            labels.append(int(t[3].strip()))
 
     tokenizer = Tokenizer(num_words=top_words)
     tokenizer.fit_on_texts(text)
@@ -38,15 +42,16 @@ def createEmbeddingMatrix(file_path):
     word_index = tokenizer.word_index
     print "Total Words found : ",len(word_index)
     num_words = min(top_words, len(word_index))
-    embedding_matrix = np.zeros((num_words, EMBEDDING_DIM))
+    embedding_matrix = np.zeros((num_words+1, EMBEDDING_DIM))
     for word, i in word_index.items():
-        if i >= MAX_NB_WORDS:
+        if i >= top_words:
             continue
         embedding_vector = embeddings_index.get(word)
+        pdb.set_trace()
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
 
-    return tokenizer,embedding_matrix,head_data,tail_data
+    return tokenizer,embedding_matrix,head_data,tail_data,labels
 
 def model_LSTM_Classifier(head_data,tail_data,labels,embedding_matrix):
     main_input_head = Input(shape=(head_shape,), dtype='int32')
@@ -75,11 +80,14 @@ def model_LSTM_Classifier(head_data,tail_data,labels,embedding_matrix):
     model.compile(optimizer='rmsprop', loss='binary_crossentropy',loss_weights=[1.])
 
     model.fit([head_data, tail_data], [labels],
-              epochs=50, batch_size=32)
+              epochs=50, batch_size=32,verbose=1,validation_split=0.2,
+              shuffle=True,)
 
     return model
 
 if __name__== "__main__":
     file_path = sys.argv[1]
-    tokenizer,embedding_matrix,head_data,tail_data = createEmbeddingMatrix(file_path)
-    print head_data,tail_data
+    tokenizer,embedding_matrix,head_data,tail_data,labels = createEmbeddingMatrix(file_path)
+    # for i in range(len(head_data)):
+    #     print head_data[i],tail_data[i]
+    model = model_LSTM_Classifier(head_data,tail_data,labels,embedding_matrix)
