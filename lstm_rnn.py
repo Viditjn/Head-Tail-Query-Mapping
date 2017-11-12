@@ -7,6 +7,7 @@ from keras.layers import Input, Embedding, LSTM, Dense
 from keras.models import Model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+import pdb
 
 head_shape = 5
 tail_shape = 10
@@ -49,6 +50,7 @@ def createEmbeddingMatrix(file_path):
         if i >= top_words:
             continue
         embedding_vector = embeddings_index.get(word)
+        pdb.set_trace()
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
 
