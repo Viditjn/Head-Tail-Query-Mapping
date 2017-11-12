@@ -1,9 +1,9 @@
 import numpy as np
 import pydexter
 
-def Entity_linkage(headQuery,tailQuery):
+def Entity_linkage(headQuery,tailQuery,dxtr):
 
-	dxtr=pydexter.DexterClient("http://dexterdemo.isti.cnr.it:8080/dexter-webapp/api/")
+	
 	head_result=dxtr.nice_annotate(headQuery, min_conf=0.8)
 	# print head_entities
 	head_entities=set()
@@ -28,7 +28,7 @@ def Entity_linkage(headQuery,tailQuery):
 
 	for head_entity in head_entities:
 		for tail_entity in tail_entities:
-			avg_score=avg_score+dxtr.relatedness(head_entity,tail_entity)
+			avg_score=avg_score+dxtr.relatedness(head_entity,tail_entity)["relatedness"]
 
 	avg_score=avg_score/(len(head_entities)*len(tail_entities))
 	
@@ -40,4 +40,25 @@ def Entity_linkage(headQuery,tailQuery):
 	else:
 		return 0
 
-print Entity_linkage("smithsonian jobs","washington dc") 
+if __name__ == '__main__':
+	
+	dxtr=pydexter.DexterClient("http://dexterdemo.isti.cnr.it:8080/dexter-webapp/api/")
+	count=0
+
+	with open("newMedium.txt") as infile:
+		for line in infile:
+			headQuery,tailQuery,relevance=line.split("||")
+			headQuery=headQuery.strip()
+			tailQuery=tailQuery.strip()
+			# print headQuery
+			# print tailQuery
+			# print relevance
+			# break
+
+			print Entity_linkage(headQuery,tailQuery,dxtr)
+			count+=1
+
+			if count==50:
+				break
+
+	print "Done"		 
